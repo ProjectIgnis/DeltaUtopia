@@ -1,4 +1,4 @@
-# Project Ignis updates for EDOPro 38 "Hope Harbinger"
+# Project Ignis updates for EDOPro 39 "Utopia"
 
 The contents of this repository are generally automatically generated from the 
 [canonical card script collection](https://github.com/ProjectIgnis/CardScripts)
