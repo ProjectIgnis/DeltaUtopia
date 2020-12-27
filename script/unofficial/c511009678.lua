@@ -1,32 +1,40 @@
---聖天樹の月桂精
 --Sunavalon Daphne
---Scripted by Eerie Code, based on the anime version
-
 local s,id=GetID()
 function s.initial_effect(c)
-	--Link summon procedure
-	Link.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsRace,RACE_PLANT),2)
-	--Must be properly summoned before reviving
+	--link summon
 	c:EnableReviveLimit()
-	--Cannot be targeted for attack
+	Link.AddProcedure(c,aux.FilterBoolFunctionEx(Card.IsRace,RACE_PLANT),2)
+	--cannot link material
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
-	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
-	e1:SetCode(EFFECT_IGNORE_BATTLE_TARGET)
-	e1:SetRange(LOCATION_MZONE)
-	e1:SetValue(aux.imval1)
+	e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE+EFFECT_FLAG_UNCOPYABLE)
+	e1:SetCode(EFFECT_CANNOT_BE_LINK_MATERIAL)
+	e1:SetCondition(s.matcon)
+	e1:SetValue(1)
 	c:RegisterEffect(e1)
-	--Return 2 plant link monsters from GY to extra deck
+	--atk
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,0))
-	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
-	e2:SetType(EFFECT_TYPE_IGNITION)
+	e2:SetType(EFFECT_TYPE_SINGLE)
+	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
+	e2:SetCode(EFFECT_IGNORE_BATTLE_TARGET)
 	e2:SetRange(LOCATION_MZONE)
-	e2:SetCountLimit(1,id)
-	e2:SetCost(s.tdcost)
-	e2:SetTarget(s.tdtg)
-	e2:SetOperation(s.tdop)
+	e2:SetValue(aux.imval1)
 	c:RegisterEffect(e2)
+	--recover
+	local e3=Effect.CreateEffect(c)
+	e3:SetDescription(aux.Stringid(11384280,0))
+	e3:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e3:SetType(EFFECT_TYPE_IGNITION)
+	e3:SetRange(LOCATION_MZONE)
+	e3:SetCountLimit(1)
+	e3:SetCost(s.tdcost)
+	e3:SetTarget(s.tdtg)
+	e3:SetOperation(s.tdop)
+	c:RegisterEffect(e3)
+end
+function s.matcon(e,tp,eg,ep,ev,re,r,rp)
+	local c=e:GetHandler()
+	return c:IsSummonType(SUMMON_TYPE_LINK) and c:GetTurnID()==Duel.GetTurnCount()
 end
 function s.tdcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.CheckReleaseGroupCost(tp,nil,1,false,nil,nil) end
@@ -34,7 +42,7 @@ function s.tdcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.Release(sg,REASON_COST)
 end
 function s.filter(c)
-	return c:IsLinkMonster() and c:IsRace(RACE_PLANT) and not c:IsCode(id) and c:IsAbleToExtra()
+	return c:IsLinkMonster() and c:IsRace(RACE_PLANT) and c:IsAbleToExtra()
 end
 function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.filter(chkc) end
