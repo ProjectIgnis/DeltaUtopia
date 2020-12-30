@@ -37,7 +37,7 @@ function s.initial_effect(c)
 	e5:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
 	e5:SetRange(LOCATION_MZONE)
 	e5:SetCondition(s.havefieldcon)
-	e5:SetValue(1)
+	e5:SetValue(aux.imval1)
 	c:RegisterEffect(e5)
 	--Destroy all in Field
 	local e6=Effect.CreateEffect(c)
@@ -63,8 +63,11 @@ s.listed_series={0x21}
 function s.sumlimit(e,c,sump,sumtype,sumpos,targetp,se)
 	return c:IsSetCard(0x21)
 end
+function s.havefieldfilter(c)
+	return c:IsFaceup() and c:IsType(TYPE_FIELD)
+end
 function s.havefieldcon(e)
-	return Duel.IsExistingMatchingCard(Card.IsFaceup,0,LOCATION_FZONE,LOCATION_FZONE,1,nil)
+	return Duel.IsExistingMatchingCard(s.havefieldfilter,0,LOCATION_SZONE,LOCATION_SZONE,1,e:GetHandler())
 end
 function s.unaffectedval(e,te)
 	return (te:IsActiveType(TYPE_SPELL) or te:IsActiveType(TYPE_TRAP)) and te:GetOwnerPlayer()~=e:GetHandlerPlayer()
@@ -79,7 +82,9 @@ function s.desop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Destroy(g,REASON_EFFECT)
 end
 function s.nofieldcon(e)
-	return not Duel.IsExistingMatchingCard(Card.IsFaceup,0,LOCATION_FZONE,LOCATION_FZONE,1,nil)
+	local f1=Duel.GetFieldCard(0,LOCATION_SZONE,5)
+	local f2=Duel.GetFieldCard(1,LOCATION_SZONE,5)
+	return (f1==nil or not f1:IsFaceup()) and (f2==nil or not f2:IsFaceup())
 end
 function s.nofieldop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Destroy(e:GetHandler(),REASON_EFFECT)
