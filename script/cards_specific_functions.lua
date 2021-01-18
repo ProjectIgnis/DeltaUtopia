@@ -607,7 +607,7 @@ end
 function Auxiliary.ZWEquipLimit(tc,te)
     return function(e,c)
         if c~=tc then return false end
-        local effs={e:GetHandler():GetCardEffect(101104104+EFFECT_EQUIP_LIMIT)}
+        local effs={e:GetHandler():GetCardEffect(75402014+EFFECT_EQUIP_LIMIT)}
         for _,eff in ipairs(effs) do
             if eff==te then return true end
         end
@@ -651,7 +651,7 @@ function Auxiliary.AddZWEquipLimit(c,con,equipval,equipop,linkedeff,prop,resetfl
     end
     e1:SetType(EFFECT_TYPE_SINGLE)
     e1:SetProperty(finalprop,EFFECT_FLAG2_MAJESTIC_MUST_COPY)
-    e1:SetCode(101104104)
+    e1:SetCode(75402014)
     e1:SetLabelObject(linkedeff)
     if resetflag and resetcount then
         e1:SetReset(resetflag,resetcount)
@@ -664,7 +664,7 @@ function Auxiliary.AddZWEquipLimit(c,con,equipval,equipop,linkedeff,prop,resetfl
     local e2=Effect.CreateEffect(c)
     e2:SetType(EFFECT_TYPE_SINGLE)
     e2:SetProperty(finalprop&~EFFECT_FLAG_CANNOT_DISABLE,EFFECT_FLAG2_MAJESTIC_MUST_COPY)
-    e2:SetCode(101104104+EFFECT_EQUIP_LIMIT)
+    e2:SetCode(75402014+EFFECT_EQUIP_LIMIT)
     if resetflag and resetcount then
         e2:SetReset(resetflag,resetcount)
     elseif resetflag then
@@ -675,9 +675,9 @@ function Auxiliary.AddZWEquipLimit(c,con,equipval,equipop,linkedeff,prop,resetfl
 end
 
 -- Amazement and Ɐttraction helper functions
-AA = {}
+local AA = {}
 function AA.eqtgfilter(c,tp)
-	return c:IsFaceup() and (c:IsSetCard(0x25d) or (not c:IsControler(tp)))
+	return c:IsFaceup() and (c:IsSetCard(0x15e) or (not c:IsControler(tp)))
 end
 function AA.eqtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and AA.eqtgfilter(chkc,tp) end
@@ -792,3 +792,61 @@ function Auxiliary.SecurityForceCost(e,tp,eg,ep,ev,re,r,rp,chk)
     end
     Duel.Remove(rg,POS_FACEUP,REASON_COST)
 end
+local Ursarctic={}
+function Ursarctic.spcfilter(c)
+	return c:IsLocation(LOCATION_HAND) and c:IsLevelAbove(7)
+end
+function Ursarctic.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
+	local c=e:GetHandler()
+	if chk==0 then return Duel.CheckReleaseGroupCost(tp,Ursarctic.spcfilter,1,true,nil,c) end
+	local g=Duel.SelectReleaseGroupCost(tp,Ursarctic.spcfilter,1,1,true,nil,c)
+	Duel.Release(g,REASON_COST)
+end
+function Ursarctic.summontarget(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
+		and e:GetHandler():IsCanBeSpecialSummoned(e,0,tp,false,false) end
+	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,e:GetHandler(),1,0,0)
+end
+function Ursarctic.summonoperation(id)
+	return function(e,tp,eg,ep,ev,re,r,rp)
+		local c=e:GetHandler()
+		if c:IsRelateToEffect(e) then 
+			Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
+		end
+		local e1=Effect.CreateEffect(c)
+		e1:SetType(EFFECT_TYPE_FIELD)
+		e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
+		e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_OATH)
+		e1:SetTargetRange(1,0)
+		e1:SetTarget(function(e,c,sump,sumtype,sumpos,targetp,se)
+						return not c:HasLevel()
+					end)
+		e1:SetReset(RESET_PHASE+PHASE_END)
+		Duel.RegisterEffect(e1,tp)
+		local e2=Effect.CreateEffect(c)
+		e2:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_CLIENT_HINT)
+		e2:SetDescription(aux.Stringid(id,1))
+		e2:SetReset(RESET_PHASE+PHASE_END)
+		e2:SetTargetRange(1,0)
+		Duel.RegisterEffect(e2,tp)
+	end
+end
+function Auxiliary.CreateUrsarcticSpsummon(c,id)
+	local e1=Effect.CreateEffect(c)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
+	e1:SetType(EFFECT_TYPE_QUICK_O)
+	e1:SetCode(EVENT_FREE_CHAIN)
+	e1:SetRange(LOCATION_HAND)
+	e1:SetCountLimit(1,id)
+	e1:SetCondition(Duel.IsMainPhase)
+	e1:SetCost(Auxiliary.CostWithReplace(Ursarctic.spcost,CARD_URSARCTIC_BIG_DIPPER))
+	e1:SetTarget(Ursarctic.summontarget)
+	e1:SetOperation(Ursarctic.summonoperation(id))
+	return e1
+end
+local Stardust={}
+function Stardust.ReleaseSelfCost(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return e:GetHandler():IsReleasable() end
+	Duel.Release(e:GetHandler(),REASON_COST)
+end
+Auxiliary.StardustCost=Auxiliary.CostWithReplace(Stardust.ReleaseSelfCost,84012625)
