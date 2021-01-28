@@ -1,4 +1,5 @@
 --デステニー・ストリングス
+--String of Destiny
 local s,id=GetID()
 function s.initial_effect(c)
 	aux.AddEquipProcedure(c,nil,aux.FilterBoolFunction(Card.IsSetCard,0x83))
@@ -48,7 +49,7 @@ function s.atop(e,tp,eg,ep,ev,re,r,rp)
 		e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 		e2:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e2:SetRange(LOCATION_SZONE)
-		e2:SetCode(EVENT_DAMAGE_CALCULATING)
+		e2:SetCode(EVENT_BATTLE_CONFIRM)
 		e2:SetCondition(s.indescon)
 		e2:SetOperation(s.indesop)
 		e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
