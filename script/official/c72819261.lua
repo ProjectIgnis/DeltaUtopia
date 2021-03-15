@@ -1,22 +1,19 @@
---エレメントセイバー・ラパウィラ
---Elementsaber Lapauila
+--エレメントセイバー・マロー
+--Elementsaber Malo
 local s,id=GetID()
 function s.initial_effect(c)
-	--Negate activation
+	--to grave
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
-	e1:SetType(EFFECT_TYPE_QUICK_O)
-	e1:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
-	e1:SetCode(EVENT_CHAINING)
-	e1:SetRange(LOCATION_MZONE)
+	e1:SetCategory(CATEGORY_TOGRAVE)
+	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetCountLimit(1)
-	e1:SetCondition(s.negcon)
-	e1:SetCost(s.negcost)
-	e1:SetTarget(s.negtg)
-	e1:SetOperation(s.negop)
+	e1:SetRange(LOCATION_MZONE)
+	e1:SetCost(s.sgcost)
+	e1:SetTarget(s.sgtg)
+	e1:SetOperation(s.sgop)
 	c:RegisterEffect(e1)
-	--Attribute change
+	--att change
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetType(EFFECT_TYPE_IGNITION)
@@ -25,25 +22,23 @@ function s.initial_effect(c)
 	e2:SetTarget(s.atttg)
 	e2:SetOperation(s.attop)
 	c:RegisterEffect(e2)
-	aux.DoubleSnareValidity(c,LOCATION_MZONE)
 end
-s.listed_series={0x400d}
-function s.negcon(e,tp,eg,ep,ev,re,r,rp)
-	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)
-end
-function s.costfilter(c)
+s.listed_names={id}
+s.listed_series={0x400d,0x113}
+function s.costfilter(c,tp)
 	return c:IsSetCard(0x400d) and c:IsType(TYPE_MONSTER) and c:IsAbleToGraveAsCost()
+		and Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,c)
 end
-function s.negcost(e,tp,eg,ep,ev,re,r,rp,chk)
+function s.sgcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local fg=Group.CreateGroup()
 	for i,pe in ipairs({Duel.IsPlayerAffectedByEffect(tp,61557074)}) do
 		fg:AddCard(pe:GetHandler())
 	end
 	local loc=LOCATION_HAND
 	if #fg>0 then loc=LOCATION_HAND+LOCATION_DECK end
-	if chk==0 then return Duel.IsExistingMatchingCard(s.costfilter,tp,loc,0,1,nil) end
+	if chk==0 then return Duel.IsExistingMatchingCard(s.costfilter,tp,loc,0,1,nil,tp) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
-	local tc=Duel.SelectMatchingCard(tp,s.costfilter,tp,loc,0,1,1,nil):GetFirst()
+	local tc=Duel.SelectMatchingCard(tp,s.costfilter,tp,loc,0,1,1,nil,tp):GetFirst()
 	if tc:IsLocation(LOCATION_DECK) then
 		local fc=nil
 		if #fg==1 then
@@ -56,16 +51,18 @@ function s.negcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	end
 	Duel.SendtoGrave(tc,REASON_COST)
 end
-function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return true end
-	Duel.SetOperationInfo(0,CATEGORY_NEGATE,eg,1,0,0)
-	if re:GetHandler():IsDestructable() and re:GetHandler():IsRelateToEffect(re) then
-		Duel.SetOperationInfo(0,CATEGORY_DESTROY,eg,1,0,0)
-	end
+function s.filter(c)
+	return (c:IsSetCard(0x400d) or c:IsSetCard(0x113)) and not c:IsCode(id) and c:IsType(TYPE_MONSTER) and c:IsAbleToGrave()
 end
-function s.negop(e,tp,eg,ep,ev,re,r,rp)
-	if Duel.NegateActivation(ev) and re:GetHandler():IsRelateToEffect(re) then
-		Duel.Destroy(eg,REASON_EFFECT)
+function s.sgtg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil) end
+	Duel.SetOperationInfo(0,CATEGORY_TOGRAVE,nil,1,tp,LOCATION_DECK)
+end
+function s.sgop(e,tp,eg,ep,ev,re,r,rp)
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
+	local g=Duel.SelectMatchingCard(tp,s.filter,tp,LOCATION_DECK,0,1,1,nil)
+	if #g>0 then
+		Duel.SendtoGrave(g,REASON_EFFECT)
 	end
 end
 function s.atttg(e,tp,eg,ep,ev,re,r,rp,chk)
@@ -74,7 +71,7 @@ function s.atttg(e,tp,eg,ep,ev,re,r,rp,chk)
 		local eff={c:GetCardEffect(EFFECT_NECRO_VALLEY)}
 		for _,te in ipairs(eff) do
 			local op=te:GetOperation()
-			if not op or op(e,c) then return false end
+			if not op or op(e,e:GetHandler()) then return false end
 		end
 		return true
 	end

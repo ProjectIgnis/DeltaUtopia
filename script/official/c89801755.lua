@@ -1,5 +1,5 @@
 --深淵の指名者
---Abyssal Designator (GOAT)
+--Abyssal Designator
 local s,id=GetID()
 function s.initial_effect(c)
 	--Activate
@@ -37,7 +37,5 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.SelectMatchingCard(p,s.filter,p,LOCATION_HAND+LOCATION_DECK,0,1,1,nil,rc,att)
 	if #g>0 then
 		Duel.SendtoGrave(g,REASON_EFFECT)
-	else
-		Duel.GoatConfirm(tp,LOCATION_HAND+LOCATION_DECK)
 	end
 end
