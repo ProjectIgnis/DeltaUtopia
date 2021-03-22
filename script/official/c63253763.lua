@@ -1,16 +1,24 @@
---宇宙獣ガンギル
---Cosmic Horror Gangi'el
+--エーリアン・リベンジャー
+--Alien Overlord
 local s,id=GetID()
 function s.initial_effect(c)
-	local e1=aux.AddNormalSummonProcedure(c,true,true,1,1,SUMMON_TYPE_TRIBUTE,aux.Stringid(id,0),s.otfilter)
+	c:SetUniqueOnField(1,0,id)
+	--special summon
+	local e1=Effect.CreateEffect(c)
+	e1:SetType(EFFECT_TYPE_FIELD)
+	e1:SetCode(EFFECT_SPSUMMON_PROC)
+	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
+	e1:SetRange(LOCATION_HAND)
+	e1:SetCondition(s.spcon)
+	e1:SetOperation(s.spop)
+	c:RegisterEffect(e1)
 	--counter
 	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
+	e2:SetDescription(aux.Stringid(id,0))
 	e2:SetCategory(CATEGORY_COUNTER)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetCountLimit(1)
-	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetTarget(s.cttg)
 	e2:SetOperation(s.ctop)
 	c:RegisterEffect(e2)
@@ -30,19 +38,21 @@ function s.initial_effect(c)
 end
 s.listed_series={0xc}
 s.counter_place_list={COUNTER_A}
-function s.otfilter(c,tp)
-	return c:GetOwner()==1-tp
+function s.spcon(e,c)
+	if c==nil then return true end
+	return Duel.GetLocationCount(c:GetControler(),LOCATION_MZONE)>0
+		and Duel.IsCanRemoveCounter(c:GetControler(),1,1,COUNTER_A,2,REASON_COST)
 end
-function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsControler(1-tp) and chkc:IsLocation(LOCATION_MZONE) and chkc:IsFaceup() end 
-	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil) end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
-	local g=Duel.SelectTarget(tp,Card.IsFaceup,tp,0,LOCATION_MZONE,1,1,nil)
-	Duel.SetOperationInfo(0,CATEGORY_COUNTER,g,1,COUNTER_A,1)
+function s.spop(e,tp,eg,ep,ev,re,r,rp,c)
+	Duel.RemoveCounter(tp,1,1,COUNTER_A,2,REASON_COST)
+end
+function s.cttg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsFaceup,tp,0,LOCATION_MZONE,1,nil) end
 end
 function s.ctop(e,tp,eg,ep,ev,re,r,rp)
-	local tc=Duel.GetFirstTarget()
-	if tc:IsFaceup() and tc:IsRelateToEffect(e) then
+	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,0,LOCATION_MZONE,nil)
+	local tc=g:GetFirst()
+	for tc in aux.Next(g) do
 		tc:AddCounter(COUNTER_A,1)
 	end
 end
