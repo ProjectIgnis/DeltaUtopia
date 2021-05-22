@@ -2,6 +2,9 @@
 --Blue-Eyes White Dragon (Deck Master)
 local s,id=GetID()
 function s.initial_effect(c)
+	if not DeckMaster then
+		return
+	end
 	--Can attack
 	local dme1=Effect.CreateEffect(c)
 	dme1:SetType(EFFECT_TYPE_FIELD)
