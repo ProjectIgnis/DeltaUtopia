@@ -1,5 +1,5 @@
---神の警告
---Solemn Warning
+--王者の看破
+--Champion's Vigilance
 local s,id=GetID()
 function s.initial_effect(c)
 	--Activate(summon)
@@ -8,7 +8,6 @@ function s.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_SUMMON)
 	e1:SetCondition(s.condition1)
-	e1:SetCost(s.cost1)
 	e1:SetTarget(s.target1)
 	e1:SetOperation(s.activate1)
 	c:RegisterEffect(e1)
@@ -21,21 +20,18 @@ function s.initial_effect(c)
 	--Activate(effect)
 	local e4=Effect.CreateEffect(c)
 	e4:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
-	e4:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
 	e4:SetType(EFFECT_TYPE_ACTIVATE)
 	e4:SetCode(EVENT_CHAINING)
 	e4:SetCondition(s.condition2)
-	e4:SetCost(s.cost2)
 	e4:SetTarget(s.target2)
 	e4:SetOperation(s.activate2)
 	c:RegisterEffect(e4)
 end
-function s.condition1(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.GetCurrentChain(true)==0
+function s.cfilter(c)
+	return c:IsFaceup() and c:IsLevelAbove(7) and c:IsType(TYPE_NORMAL)
 end
-function s.cost1(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.CheckLPCost(tp,2000)
-	else Duel.PayLPCost(tp,2000) end
+function s.condition1(e,tp,eg,ep,ev,re,r,rp)
+	return Duel.GetCurrentChain(true)==0 and Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
 function s.target1(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
@@ -47,13 +43,8 @@ function s.activate1(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Destroy(eg,REASON_EFFECT)
 end
 function s.condition2(e,tp,eg,ep,ev,re,r,rp)
-	if not Duel.IsChainNegatable(ev) then return false end
-	if not re or (not re:IsActiveType(TYPE_MONSTER) and not re:IsHasType(EFFECT_TYPE_ACTIVATE)) then return false end
-	return re:IsHasCategory(CATEGORY_SPECIAL_SUMMON)
-end
-function s.cost2(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.CheckLPCost(tp,2000)
-	else Duel.PayLPCost(tp,2000) end
+	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)
+		and Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE,0,1,nil)
 end
 function s.target2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end

@@ -1,5 +1,5 @@
---神の警告
---Solemn Warning
+--ポリノシス
+--Pollinosis
 local s,id=GetID()
 function s.initial_effect(c)
 	--Activate(summon)
@@ -8,34 +8,34 @@ function s.initial_effect(c)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_SUMMON)
 	e1:SetCondition(s.condition1)
-	e1:SetCost(s.cost1)
+	e1:SetCost(s.cost)
 	e1:SetTarget(s.target1)
 	e1:SetOperation(s.activate1)
 	c:RegisterEffect(e1)
 	local e2=e1:Clone()
-	e2:SetCode(EVENT_FLIP_SUMMON)
+	e2:SetCode(EVENT_SPSUMMON)
 	c:RegisterEffect(e2)
-	local e3=e1:Clone()
-	e3:SetCode(EVENT_SPSUMMON)
-	c:RegisterEffect(e3)
 	--Activate(effect)
-	local e4=Effect.CreateEffect(c)
-	e4:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
-	e4:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
-	e4:SetType(EFFECT_TYPE_ACTIVATE)
-	e4:SetCode(EVENT_CHAINING)
-	e4:SetCondition(s.condition2)
-	e4:SetCost(s.cost2)
-	e4:SetTarget(s.target2)
-	e4:SetOperation(s.activate2)
-	c:RegisterEffect(e4)
+	local e3=Effect.CreateEffect(c)
+	e3:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
+	e3:SetType(EFFECT_TYPE_ACTIVATE)
+	e3:SetCode(EVENT_CHAINING)
+	e3:SetCondition(s.condition2)
+	e3:SetCost(s.cost)
+	e3:SetTarget(s.target2)
+	e3:SetOperation(s.activate2)
+	c:RegisterEffect(e3)
 end
 function s.condition1(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.GetCurrentChain(true)==0
 end
-function s.cost1(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.CheckLPCost(tp,2000)
-	else Duel.PayLPCost(tp,2000) end
+function s.filter(c)
+	return c:IsRace(RACE_PLANT) and not c:IsStatus(STATUS_BATTLE_DESTROYED)
+end
+function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.CheckReleaseGroupCost(tp,s.filter,1,false,nil,nil) end
+	local g=Duel.SelectReleaseGroupCost(tp,s.filter,1,1,false,nil,nil)
+	Duel.Release(g,REASON_COST)
 end
 function s.target1(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
@@ -47,13 +47,7 @@ function s.activate1(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Destroy(eg,REASON_EFFECT)
 end
 function s.condition2(e,tp,eg,ep,ev,re,r,rp)
-	if not Duel.IsChainNegatable(ev) then return false end
-	if not re or (not re:IsActiveType(TYPE_MONSTER) and not re:IsHasType(EFFECT_TYPE_ACTIVATE)) then return false end
-	return re:IsHasCategory(CATEGORY_SPECIAL_SUMMON)
-end
-function s.cost2(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.CheckLPCost(tp,2000)
-	else Duel.PayLPCost(tp,2000) end
+	return re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)
 end
 function s.target2(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
