@@ -1,5 +1,5 @@
---時械神 サンダイオン (Anime)
---Sandaion, the Timelord (Anime)
+--時械神 カミオン (Anime)
+--Kamion, the Timelord (Anime)
 local s,id=GetID()
 function s.initial_effect(c)
 	--indes
@@ -48,10 +48,9 @@ function s.initial_effect(c)
 	e7:SetTarget(s.tdtg)
 	e7:SetOperation(s.tdop)
 	c:RegisterEffect(e7)
-	--4000 damage
+	--monster to deck
 	local e8=Effect.CreateEffect(c)
-	e8:SetCategory(CATEGORY_DAMAGE)
-	e8:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e8:SetCategory(CATEGORY_TODECK+CATEGORY_DAMAGE)
 	e8:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e8:SetDescription(aux.Stringid(id,0))
 	e8:SetCode(EVENT_BATTLED)
@@ -71,13 +70,14 @@ function s.damop(e,tp,eg,ep,ev,re,r,rp)
 end
 function s.tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	Duel.SetTargetPlayer(1-tp)
-	Duel.SetTargetParam(4000)
-	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,4000)
+	local sg=Duel.GetMatchingGroup(Card.IsAbleToDeck,tp,0,LOCATION_MZONE,nil)
+	Duel.SetOperationInfo(0,CATEGORY_TODECK,sg,#sg,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,#sg*500)
 end
 function s.op(e,tp,eg,ep,ev,re,r,rp)
-	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	Duel.Damage(p,d,REASON_EFFECT)
+	local sg=Duel.GetMatchingGroup(Card.IsAbleToDeck,tp,0,LOCATION_MZONE,nil)
+	local ct=Duel.SendtoDeck(sg,nil,2,REASON_EFFECT)
+	Duel.Damage(1-tp,ct*500,REASON_EFFECT)
 end
 function s.tdcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.GetTurnPlayer()==tp

@@ -1,5 +1,5 @@
---時械神 サンダイオン (Anime)
---Sandaion, the Timelord (Anime)
+--時械神メタイオン (Anime)
+--Metaion, the Timelord (Anime)
 local s,id=GetID()
 function s.initial_effect(c)
 	--indes
@@ -48,15 +48,17 @@ function s.initial_effect(c)
 	e7:SetTarget(s.tdtg)
 	e7:SetOperation(s.tdop)
 	c:RegisterEffect(e7)
-	--4000 damage
+	--to hand
 	local e8=Effect.CreateEffect(c)
-	e8:SetCategory(CATEGORY_DAMAGE)
-	e8:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
-	e8:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e8:SetDescription(aux.Stringid(id,0))
-	e8:SetCode(EVENT_BATTLED)
-	e8:SetTarget(s.tg)
-	e8:SetOperation(s.op)
+	e8:SetCategory(CATEGORY_TOHAND+CATEGORY_DAMAGE)
+	e8:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
+	e8:SetCode(EVENT_PHASE+PHASE_BATTLE)
+	e8:SetCountLimit(1)
+	e8:SetRange(LOCATION_MZONE)
+	e8:SetCondition(s.thcon)
+	e8:SetTarget(s.thtg)
+	e8:SetOperation(s.thop)
 	c:RegisterEffect(e8)
 end
 function s.damcon(e)
@@ -69,15 +71,23 @@ function s.damop(e,tp,eg,ep,ev,re,r,rp)
 		Duel.ChangeBattleDamage(1,0)
 	end
 end
-function s.tg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return true end
-	Duel.SetTargetPlayer(1-tp)
-	Duel.SetTargetParam(4000)
-	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,4000)
+function s.thcon(e,tp,eg,ep,ev,re,r,rp)
+	return e:GetHandler():GetBattledGroupCount()>0
 end
-function s.op(e,tp,eg,ep,ev,re,r,rp)
-	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	Duel.Damage(p,d,REASON_EFFECT)
+function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return true end
+	local g=Duel.GetMatchingGroup(Card.IsAbleToHand,tp,LOCATION_MZONE,LOCATION_MZONE,e:GetHandler())
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,g,1,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,300)
+end
+function s.thop(e,tp,eg,ep,ev,re,r,rp)
+	local g=Duel.GetMatchingGroup(Card.IsAbleToHand,tp,LOCATION_MZONE,LOCATION_MZONE,e:GetHandler())
+	if #g==0 then return end
+	local sg=g:Select(tp,1,10,nil)
+	Duel.SendtoHand(sg,nil,REASON_EFFECT)
+	local og=Duel.GetOperatedGroup()
+	local ct=og:FilterCount(Card.IsLocation,nil,LOCATION_HAND+LOCATION_EXTRA)
+	Duel.Damage(1-tp,ct*300,REASON_EFFECT)
 end
 function s.tdcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.GetTurnPlayer()==tp

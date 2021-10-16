@@ -1,5 +1,5 @@
---時械神 サンダイオン (Anime)
---Sandaion, the Timelord (Anime)
+--時械神 ラフィオン (Anime)
+--Raphion, the Timelord (Anime)
 local s,id=GetID()
 function s.initial_effect(c)
 	--indes
@@ -48,10 +48,9 @@ function s.initial_effect(c)
 	e7:SetTarget(s.tdtg)
 	e7:SetOperation(s.tdop)
 	c:RegisterEffect(e7)
-	--4000 damage
+	--half damage
 	local e8=Effect.CreateEffect(c)
-	e8:SetCategory(CATEGORY_DAMAGE)
-	e8:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e8:SetCategory(CATEGORY_TOHAND+CATEGORY_DAMAGE)
 	e8:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e8:SetDescription(aux.Stringid(id,0))
 	e8:SetCode(EVENT_BATTLED)
@@ -70,14 +69,18 @@ function s.damop(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 function s.tg(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return true end
-	Duel.SetTargetPlayer(1-tp)
-	Duel.SetTargetParam(4000)
-	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,4000)
+	local bc=e:GetHandler():GetBattleTarget()
+	if chk==0 then return bc end
+	if bc:IsRelateToBattle() then
+		Duel.SetOperationInfo(0,CATEGORY_TOHAND,bc,1,0,0)
+		Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,bc:GetAttack())
+	end
 end
 function s.op(e,tp,eg,ep,ev,re,r,rp)
-	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	Duel.Damage(p,d,REASON_EFFECT)
+	local bc=e:GetHandler():GetBattleTarget()
+	if bc and bc:IsRelateToBattle() and Duel.SendtoHand(bc,nil,REASON_EFFECT)>0 then
+		Duel.Damage(1-tp,bc:GetAttack(),REASON_EFFECT)
+	end
 end
 function s.tdcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.GetTurnPlayer()==tp

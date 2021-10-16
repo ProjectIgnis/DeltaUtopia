@@ -1,5 +1,5 @@
---時械神 サンダイオン (Anime)
---Sandaion, the Timelord (Anime)
+--時械神 ラツィオン (Anime)
+--Lazion, the Timelord (Anime)
 local s,id=GetID()
 function s.initial_effect(c)
 	--indes
@@ -48,22 +48,33 @@ function s.initial_effect(c)
 	e7:SetTarget(s.tdtg)
 	e7:SetOperation(s.tdop)
 	c:RegisterEffect(e7)
-	--4000 damage
+	--s/t to deck
 	local e8=Effect.CreateEffect(c)
-	e8:SetCategory(CATEGORY_DAMAGE)
-	e8:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e8:SetCategory(CATEGORY_TODECK)
 	e8:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_F)
 	e8:SetDescription(aux.Stringid(id,0))
 	e8:SetCode(EVENT_BATTLED)
 	e8:SetTarget(s.tg)
 	e8:SetOperation(s.op)
 	c:RegisterEffect(e8)
+	--damage
+	local e9=Effect.CreateEffect(c)
+	e9:SetDescription(aux.Stringid(id,1))
+	e9:SetCategory(CATEGORY_DAMAGE)
+	e9:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e9:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_F)
+	e9:SetRange(LOCATION_MZONE)
+	e9:SetCode(EVENT_DRAW)
+	e9:SetCondition(s.drcon)
+	e9:SetTarget(s.drtg)
+	e9:SetOperation(s.drop)
+	c:RegisterEffect(e9)
 end
 function s.damcon(e)
 	return e:GetHandler():IsAttackPos()
 end
 function s.damop(e,tp,eg,ep,ev,re,r,rp)
-	if Duel.SelectYesNo(tp,aux.Stringid(id,2)) then
+	if Duel.SelectYesNo(tp,aux.Stringid(id,3)) then
 		Duel.Hint(HINT_CARD,1-tp,id)
 		Duel.ChangeBattleDamage(0,0)
 		Duel.ChangeBattleDamage(1,0)
@@ -71,13 +82,12 @@ function s.damop(e,tp,eg,ep,ev,re,r,rp)
 end
 function s.tg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return true end
-	Duel.SetTargetPlayer(1-tp)
-	Duel.SetTargetParam(4000)
-	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,4000)
+	local sg=Duel.GetMatchingGroup(Card.IsAbleToDeck,tp,0,LOCATION_MZONE+LOCATION_GRAVE,nil)
+	Duel.SetOperationInfo(0,CATEGORY_TODECK,sg,#sg,0,0)
 end
 function s.op(e,tp,eg,ep,ev,re,r,rp)
-	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
-	Duel.Damage(p,d,REASON_EFFECT)
+	local sg=Duel.GetMatchingGroup(Card.IsAbleToDeck,tp,0,LOCATION_MZONE+LOCATION_GRAVE,nil)
+	Duel.SendtoDeck(sg,nil,2,REASON_EFFECT)
 end
 function s.tdcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.GetTurnPlayer()==tp
@@ -91,6 +101,19 @@ function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	if c:IsRelateToEffect(e) and c:IsFaceup() and c:IsAbleToDeck() then
 		Duel.SendtoDeck(c,nil,2,REASON_EFFECT)
 	end
+end
+function s.drcon(e,tp,eg,ep,ev,re,r,rp)
+	return ep~=tp and Duel.GetTurnPlayer()~=tp and Duel.GetCurrentPhase()==PHASE_DRAW
+end
+function s.drtg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return true end
+	Duel.SetTargetPlayer(1-tp)
+	Duel.SetTargetParam(1000)
+	Duel.SetOperationInfo(0,CATEGORY_DAMAGE,nil,0,1-tp,1000)
+end
+function s.drop(e,tp,eg,ep,ev,re,r,rp)
+	local p,d=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER,CHAININFO_TARGET_PARAM)
+	Duel.Damage(p,d,REASON_EFFECT)
 end
 function s.sumlimit(e,c,sump,sumtype,sumpos,targetp,se)
 	local c=e:GetHandler()
