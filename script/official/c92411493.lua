@@ -1,17 +1,15 @@
---曇天気スレット
---The Weather Painter Cloud
+--雨天気ラズラ
+--The Weather Painter Rain
 --Scripted by Eerie Code
 local s,id=GetID()
 function s.initial_effect(c)
 	--place
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
-	e1:SetCode(EVENT_TO_GRAVE)
-	e1:SetProperty(EFFECT_FLAG_CARD_TARGET+EFFECT_FLAG_DELAY)
-	e1:SetRange(LOCATION_MZONE)
+	e1:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
+	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
+	e1:SetProperty(EFFECT_FLAG_DELAY)
 	e1:SetCountLimit(1,id)
-	e1:SetCondition(s.tfcon)
 	e1:SetTarget(s.tftg)
 	e1:SetOperation(s.tfop)
 	c:RegisterEffect(e1)
@@ -35,35 +33,19 @@ function s.initial_effect(c)
 	c:RegisterEffect(e3)
 end
 s.listed_series={0x109}
-function s.tfcfilter(c,tp)
-	return c:IsPreviousPosition(POS_FACEUP) and c:IsPreviousControler(tp) and c:IsPreviousSetCard(0x109) and c:IsPreviousLocation(LOCATION_ONFIELD)
-end
-function s.tfcon(e,tp,eg,ep,ev,re,r,rp)
-	return eg:IsExists(s.tfcfilter,1,e:GetHandler(),tp)
-end
 function s.tffilter(c,tp)
 	return c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsSetCard(0x109) and not c:IsForbidden() and c:CheckUniqueOnField(tp)
 		and not c:IsType(TYPE_FIELD)
 end
-function s.tftg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and chkc:IsControler(tp) and s.tffilter(chkc,tp) end
+function s.tftg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_SZONE)>0
-		and Duel.IsExistingTarget(s.tffilter,tp,LOCATION_GRAVE,0,1,nil,tp) end
-	local ct=math.min(Duel.GetLocationCount(tp,LOCATION_SZONE),2)
-	local g=Duel.SelectTarget(tp,s.tffilter,tp,LOCATION_GRAVE,0,1,ct,nil,tp)
-	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,g,#g,0,0)
+		and Duel.IsExistingMatchingCard(s.tffilter,tp,LOCATION_HAND,0,1,nil,tp) end
 end
 function s.tfop(e,tp,eg,ep,ev,re,r,rp)
-	local g=Duel.GetTargetCards(e)
-	if #g<=0 then return end
-	local a,b=Duel.GetLocationCount(tp,LOCATION_SZONE)
-	local ct=math.min(2,a)
-	if ct<1 then return end
-	if #g>ct then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)
-		g=g:Select(tp,1,ct,nil)
-	end
-	for tc in aux.Next(g) do
+	if Duel.GetLocationCount(tp,LOCATION_SZONE)<=0 then return end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)
+	local tc=Duel.SelectMatchingCard(tp,s.tffilter,tp,LOCATION_HAND,0,1,1,nil,tp):GetFirst()
+	if tc then
 		Duel.MoveToField(tc,tp,tp,LOCATION_SZONE,POS_FACEUP,true)
 	end
 end
