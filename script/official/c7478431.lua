@@ -1,8 +1,8 @@
---ナチュル・ナーブ
---Naturia Vein
+--ナチュル・サンフラワー
+--Naturia Sunflower
 local s,id=GetID()
 function s.initial_effect(c)
-	--Negate Spell/Trap Card activation
+	--Negate effect activation
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_NEGATE+CATEGORY_DESTROY)
@@ -15,11 +15,11 @@ function s.initial_effect(c)
 	e1:SetTarget(s.distg)
 	e1:SetOperation(s.disop)
 	c:RegisterEffect(e1)
-	aux.DoubleSnareValidity(c,LOCATION_MZONE)
 end
 s.listed_series={0x2a}
 function s.discon(e,tp,eg,ep,ev,re,r,rp)
-	return ep==1-tp and re:IsHasType(EFFECT_TYPE_ACTIVATE) and Duel.IsChainNegatable(ev)
+	return ep~=tp and re:IsActiveType(TYPE_MONSTER)
+		and Duel.GetChainInfo(ev,CHAININFO_TRIGGERING_LOCATION)~=LOCATION_DECK and Duel.IsChainNegatable(ev)
 end
 function s.cfilter(c)
 	return c:IsSetCard(0x2a) and not c:IsStatus(STATUS_BATTLE_DESTROYED)
