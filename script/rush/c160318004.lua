@@ -1,5 +1,5 @@
---Luster Dragon (Rush)
+--Archfiend Soldier (Rush)
 local s,id=GetID()
 function s.initial_effect(c)
-	Card.Alias(c,11091375)
+	Card.Alias(c,49881766)
 end
