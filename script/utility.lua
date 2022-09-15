@@ -1872,6 +1872,38 @@ function Auxiliary.DefaultFieldReturnOp(rg,e,tp)
 	end
 end
 
+--temporary alias for renamed functions
+Duel.AskAny                                 = Auxiliary.AskAny
+Duel.AskEveryone                            = Auxiliary.AskEveryone
+Duel.AnnounceAnotherAttribute               = Auxiliary.AnnounceAnotherAttribute
+Duel.AnnounceAnotherRace                    = Auxiliary.AnnounceAnotherRace
+Duel.SelectEffect                           = Auxiliary.SelectEffect
+Duel.ActivateFieldSpell                     = Auxiliary.PlayFieldSpell
+Duel.CheckPendulumZones                     = Auxiliary.CheckPendulumZones
+Card.HasNonZeroAttack                       = Auxiliary.nzatk
+Card.HasNonZeroDefense                      = Auxiliary.nzdef
+Card.IsNegatableMonster                     = Auxiliary.disfilter1
+Card.IsNegatableSpellTrap                   = Auxiliary.disfilter2
+Card.IsNegatable                            = Auxiliary.disfilter3
+Card.ListsCounter                           = Auxiliary.HasCounterListed
+Card.PlacesCounter                          = Auxiliary.CanPlaceCounter
+Card.EquipByEffectLimit                     = Auxiliary.EquipByEffectLimit
+Card.EquipByEffectAndLimitRegister          = Auxiliary.EquipByEffectAndLimitRegister
+Card.ListsCodeAsMaterial                    = Auxiliary.IsMaterialListCode
+Card.ListsArchetypeAsMaterial               = Auxiliary.IsMaterialListSetCard
+Card.ListsCodeWithArchetype                 = Auxiliary.IsArchetypeCodeListed
+Card.ListsCode                              = Auxiliary.IsCodeListed
+Card.ListsCardType                          = Auxiliary.IsCardTypeListed
+Card.ListsArchetype                         = Auxiliary.HasListedSetCode
+Gemini.EffectStatusCondition                = Auxiliary.IsGeminiState
+Auxiliary.NOT(Gemini.EffectStatusCondition) = Auxiliary.IsNotGeminiState
+Gemini.NormalStatusCondition                = Auxiliary.GeminiNormalCondition
+Gemini.AddProcedure                         = Auxiliary.EnableGeminiAttribute
+Spirit.AddProcedure                         = Auxiliary.EnableSpiritReturn
+Spirit.SummonRegister                       = Auxiliary.SpiritReturnReg
+Spirit.ReturnOperation                      = Auxiliary.SpiritReturnOperation
+Auxiliary.FaceupFilter                      = Auxiliary.FilterFaceupFunction
+
 Duel.LoadScript("cards_specific_functions.lua")
 Duel.LoadScript("proc_fusion.lua")
 Duel.LoadScript("proc_fusion_spell.lua")
