@@ -1873,6 +1873,8 @@ function Auxiliary.DefaultFieldReturnOp(rg,e,tp)
 end
 
 --temporary alias for renamed functions
+Gemini={}
+Spirit={}
 Duel.AskAny                                 = Auxiliary.AskAny
 Duel.AskEveryone                            = Auxiliary.AskEveryone
 Duel.AnnounceAnotherAttribute               = Auxiliary.AnnounceAnotherAttribute
