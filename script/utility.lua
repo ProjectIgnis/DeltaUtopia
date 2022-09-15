@@ -1896,7 +1896,6 @@ Card.ListsCode                              = Auxiliary.IsCodeListed
 Card.ListsCardType                          = Auxiliary.IsCardTypeListed
 Card.ListsArchetype                         = Auxiliary.HasListedSetCode
 Gemini.EffectStatusCondition                = Auxiliary.IsGeminiState
-Auxiliary.NOT(Gemini.EffectStatusCondition) = Auxiliary.IsNotGeminiState
 Gemini.NormalStatusCondition                = Auxiliary.GeminiNormalCondition
 Gemini.AddProcedure                         = Auxiliary.EnableGeminiAttribute
 Spirit.AddProcedure                         = Auxiliary.EnableSpiritReturn
